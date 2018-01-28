@@ -1,35 +1,49 @@
-// const regl = require('regl')();
 const OpenSimplex = require("open-simplex-noise").default;
+const simp = new OpenSimplex(new Date());
+const NUM_POINTS = 1e3;
 
-/* const mat4 = require('gl-mat4')
- * const hsv2rgb = require('hsv2rgb')
- * 
- * const NUM_POINTS = 1e5
- * const VERT_SIZE = 4 * (4 + 4 + 3)*/
-
-const simp = new OpenSimplex(1);
+function generatePoints(w, h) {
+  const r = [],
+        scatter = Math.max(w, h);
+  for (let i = 0; i < NUM_POINTS; i++) {
+    r.push([w  + (Math.random() - 0.5) * scatter,
+            h + (Math.random() - 0.5) * scatter])
+  }
+  return r;
+}
 
 function main() {
   var canvas = document.createElement("canvas"),
-      context = canvas.getContext("2d");
-  canvas.height = 60;
-  canvas.width = 80;
-  var scale = 10;
+      context = canvas.getContext("2d"),
+      width = window.innerWidth,
+      height = window.innerHeight,
+      points = generatePoints(width / 2, height / 2),
+      speed = 2,
+      scale = 500;
+  
+  canvas.width = width;
+  canvas.height = height;
   var z = 0;
 
-  const imageData = context.createImageData(canvas.width, canvas.height);
   function draw() {
-    for (let x = 0; x < canvas.width; x++) {
-      for (let y = 0; y < canvas.height; y++) {
-        const i = (x + y * canvas.width) * 4;
-        const value = (simp.noise3D(x / scale, y / scale, z / scale) + 1) * 128;
-        imageData.data[i] = value;
-        imageData.data[i + 1] = value;
-        imageData.data[i + 2] = value;
-        imageData.data[i + 3] = 255;
+    //context.fillStyle = "rgba(255, 255, 255, 0.5)";
+    //context.fillRect(0, 0, width, height)
+    context.fillStyle = "rgba(0, 0, 0, 0.15)";
+    for (let i = 0; i < NUM_POINTS; i++) {
+      let [x, y] = points[i],
+          noise = simp.noise3D(x / scale, y / scale, z) * 10,
+          [nx, ny] = [x + Math.sin(noise) * speed , y + (Math.cos(noise) ) * speed],
+          s = 2;
+      
+      context.fillRect(x, y, s, s);
+
+      if (nx > -100 && nx < canvas.width + 100 && nx > -100 && ny < canvas.height + 100) {
+        points[i] = [nx, ny]
+      } else {
+        points[i] = [width / 2, height / 2]
       }
+      
     }
-    context.putImageData(imageData, 0, 0);
   }
   
   canvas.style.position = "absolute";
@@ -40,7 +54,7 @@ function main() {
   function animate() {
     requestAnimationFrame(animate);
     draw();
-    z += 0.25;
+    z += 0.0125;
   }
   animate();
 }
