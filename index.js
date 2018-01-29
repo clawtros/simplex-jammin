@@ -18,43 +18,36 @@ function main() {
       width = window.innerWidth,
       height = window.innerHeight,
       points = generatePoints(width / 2, height / 2),
-      speed = 2,
-      scale = 500;
+      speed = 1,
+      scale = 100;
   
   canvas.width = width;
   canvas.height = height;
   var z = 0;
 
   function draw() {
-    //context.fillStyle = "rgba(255, 255, 255, 0.5)";
-    //context.fillRect(0, 0, width, height)
-    context.fillStyle = "rgba(0, 0, 0, 0.15)";
     for (let i = 0; i < NUM_POINTS; i++) {
       let [x, y] = points[i],
-          noise = simp.noise3D(x / scale, y / scale, z) * 10,
-          [nx, ny] = [x + Math.sin(noise) * speed , y + (Math.cos(noise) ) * speed],
-          s = 2;
-      
+          [sx, sy] = points[i].map(p=>p / scale),
+          noise = simp.noise3D(sx, sy, z) * 6.28,
+          [nx, ny] = [x + Math.sin(noise) * speed, y + (Math.cos(noise) ) * speed].map(n=>n + (Math.random() - 0.5) * 5),
+          s = 0.5;
+      context.fillStyle = `hsla(${parseInt(255 * noise)}, 80%, 50%, 0.25)`;      
       context.fillRect(x, y, s, s);
-
+      
       if (nx > -100 && nx < canvas.width + 100 && nx > -100 && ny < canvas.height + 100) {
         points[i] = [nx, ny]
       } else {
         points[i] = [width / 2, height / 2]
       }
-      
     }
   }
-  
-  canvas.style.position = "absolute";
-  canvas.style.top = 0;
-  canvas.style.left = 0;
   
   document.body.appendChild(canvas);
   function animate() {
     requestAnimationFrame(animate);
     draw();
-    z += 0.0125;
+    z += 0.005;
   }
   animate();
 }
